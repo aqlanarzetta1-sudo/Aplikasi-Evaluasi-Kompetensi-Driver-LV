@@ -1,0 +1,562 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DriverPro - PT Graha Prima Energi</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap');
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            /* --- BACKGROUND IMAGE SETTING --- */
+            /* Pastikan file 'background.jpg' ada di folder yang sama */
+            background-image: url('background.jpg'); 
+            background-color: #f3f4f6; /* Fallback color */
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            background-repeat: no-repeat;
+        }
+
+        /* Overlay Gradient untuk kesan premium & keterbacaan */
+        .bg-overlay {
+            background: linear-gradient(to bottom, rgba(243, 244, 246, 0.95), rgba(229, 231, 235, 0.9));
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .glass-header {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+
+        .card-modern {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.6);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+
+        .option-checkbox:checked + div {
+            border-color: #2563eb;
+            background-color: #eff6ff;
+            box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.2);
+        }
+        .option-checkbox:checked + div .check-icon {
+            opacity: 1;
+        }
+        
+        .animate-slide-up {
+            animation: slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        /* Loader styles */
+        .loader {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #1e40af; /* Darker blue */
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+    </style>
+</head>
+<body class="text-gray-800 h-screen overflow-hidden">
+
+    <div class="bg-overlay w-full h-full overflow-y-auto flex flex-col">
+
+        <!-- Loading Overlay -->
+        <div id="loadingOverlay" class="fixed inset-0 bg-white/95 z-50 flex flex-col items-center justify-center hidden backdrop-blur-sm">
+            <div class="loader mb-4"></div>
+            <p id="loadingText" class="text-gray-800 font-bold animate-pulse tracking-wide">Memuat Sistem...</p>
+        </div>
+
+        <!-- HEADER PROFESIONAL -->
+        <header class="glass-header z-20 sticky top-0 border-b border-gray-200/50">
+            <div class="max-w-5xl mx-auto px-4 py-3">
+                <div class="flex justify-between items-center relative">
+                    
+                    <!-- LOGO KIRI: GPE -->
+                    <div class="flex-shrink-0 w-16 sm:w-24 flex items-center justify-start">
+                        <img src="logo_gpe.png" 
+                             onerror="this.onerror=null; this.src='https://placehold.co/100x50/png?text=GPE';" 
+                             alt="Logo GPE" 
+                             class="h-10 sm:h-14 object-contain transition hover:scale-105">
+                    </div>
+
+                    <!-- TEXT TENGAH -->
+                    <div class="flex-grow text-center mx-2 absolute left-1/2 transform -translate-x-1/2 w-full max-w-[60%] sm:max-w-none">
+                        <h1 class="text-xs sm:text-sm font-bold text-gray-500 tracking-[0.2em] uppercase mb-0.5">Aplikasi Evaluasi Driver</h1>
+                        <h2 class="text-sm sm:text-lg md:text-xl font-extrabold text-gray-900 leading-tight">PT GRAHA PRIMA ENERGI</h2>
+                    </div>
+
+                    <!-- LOGO KANAN: MAPAN -->
+                    <div class="flex-shrink-0 w-16 sm:w-24 flex items-center justify-end">
+                        <img src="logo_mapan.png" 
+                             onerror="this.onerror=null; this.src='https://placehold.co/100x50/png?text=MAPAN';" 
+                             alt="Logo MAPAN" 
+                             class="h-10 sm:h-14 object-contain transition hover:scale-105">
+                    </div>
+
+                </div>
+                
+                <!-- Timer Display (Hidden by default) -->
+                <div id="timerWrapper" class="hidden flex justify-center mt-2">
+                    <div class="inline-flex items-center gap-2 text-sm font-bold bg-gray-900 text-white px-4 py-1 rounded-full shadow-lg">
+                        <i class="far fa-clock text-yellow-400"></i> <span id="timeValue">00:00</span>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="flex-grow flex flex-col items-center justify-start pt-6 px-4 pb-12 w-full">
+            <div id="appContainer" class="w-full max-w-4xl">
+                <!-- Dynamic Content -->
+            </div>
+        </main>
+
+        <!-- Footer -->
+        <footer class="mt-auto py-4 text-center text-gray-500 text-[10px] sm:text-xs font-medium border-t border-gray-200 bg-white/50 backdrop-blur">
+            <p>&copy; 2024 HSE Dept. PT Graha Prima Energi. All Rights Reserved.</p>
+            <p class="mt-1 opacity-70">Internal Use Only | Safety First</p>
+        </footer>
+
+    </div>
+
+    <script>
+        // --- KONFIGURASI GOOGLE SHEET ---
+        const GOOGLE_SCRIPT_URL = ''; 
+
+        // --- DATA SOAL DEFAULT ---
+        const fallbackQuizData = [
+            {
+                id: 1,
+                question: "P2H (Pemeriksaan Harian): Komponen keselamatan KHUSUS tambang apa yang WAJIB berfungsi pada LV sebelum masuk area tambang?",
+                options: [
+                    { text: "Buggy Whip (Tiang Bendera) terpasang tegak", isCorrect: true },
+                    { text: "Lampu Rotary/Strobo menyala", isCorrect: true },
+                    { text: "Radio Komunikasi (Rig) berfungsi dua arah", isCorrect: true },
+                    { text: "Kualitas bass audio musik", isCorrect: false },
+                    { text: "Fungsi Penggerak 4WD (Double Gardan)", isCorrect: true },
+                    { text: "Warna sarung jok mobil", isCorrect: false },
+                    { text: "Parfum mobil aroma kopi", isCorrect: false },
+                    { text: "Kaca film gelap 80%", isCorrect: false }
+                ]
+            },
+            // ... (Soal lainnya sama seperti sebelumnya, dipersingkat agar muat)
+             {
+                id: 2,
+                question: "Interaksi Unit: Mana aturan 'Right of Way' (Prioritas Jalan) yang BENAR saat berinteraksi dengan Alat Berat (A2B)?",
+                options: [
+                    { text: "Selalu mengalah pada Haul Truck (HD) muatan", isCorrect: true },
+                    { text: "Jaga jarak aman minimal 50 meter di belakang HD", isCorrect: true },
+                    { text: "Mendahului HD dari sisi kiri (Blind side)", isCorrect: false },
+                    { text: "Kontak radio & tunggu konfirmasi sebelum menyalip", isCorrect: true },
+                    { text: "Memotong jalan Grader yang sedang bekerja", isCorrect: false },
+                    { text: "Parkir di area blind spot Dozer", isCorrect: false },
+                    { text: "Berhenti jika pandangan terhalang debu tebal", isCorrect: true },
+                    { text: "Membunyikan klakson panjang agar HD minggir", isCorrect: false }
+                ]
+            },
+            {
+                id: 3,
+                question: "Prosedur Parkir & Breakdown: Apa tindakan yang BENAR saat memarkir LV atau mengalami kerusakan di area tambang?",
+                options: [
+                    { text: "Parkir dengan posisi 'V-Shape' atau ganjal ban", isCorrect: true },
+                    { text: "Pasang rem tangan (Hand Brake) maksimal", isCorrect: true },
+                    { text: "Tinggalkan unit tanpa lapor radio", isCorrect: false },
+                    { text: "Nyalakan lampu hazard dan rotary", isCorrect: true },
+                    { text: "Pasang safety cone/segitiga pengaman", isCorrect: true },
+                    { text: "Parkir di tengah jalan hauling saat breakdown", isCorrect: false },
+                    { text: "Tidur di dalam mobil dengan mesin menyala", isCorrect: false },
+                    { text: "Parkir tepat di belakang unit Track (Dozer/Excavator)", isCorrect: false }
+                ]
+            },
+            {
+                id: 4,
+                question: "Komunikasi Radio: Etika dan prosedur komunikasi radio tambang yang BENAR adalah?",
+                options: [
+                    { text: "Menyebutkan nomor lambung unit saat memanggil", isCorrect: true },
+                    { text: "Menggunakan saluran (channel) sesuai area kerja", isCorrect: true },
+                    { text: "Menggunakan radio untuk curhat atau menyanyi", isCorrect: false },
+                    { text: "Lapor posisi (Traffic Call) di setiap simpang/tikungan", isCorrect: true },
+                    { text: "Bahasa singkat, padat, dan jelas", isCorrect: true },
+                    { text: "Memotong pembicaraan keadaan darurat (Emergency)", isCorrect: false },
+                    { text: "Berteriak di radio agar terdengar jelas", isCorrect: false },
+                    { text: "Menggunakan kata-kata kasar/sandi pribadi", isCorrect: false }
+                ]
+            },
+            {
+                id: 5,
+                question: "Golden Rules & Fatality Prevention: Pelanggaran fatal apa yang BISA menyebabkan pemutusan hubungan kerja (PHK) seketika?",
+                options: [
+                    { text: "Mengemudi di bawah pengaruh alkohol/narkoba", isCorrect: true },
+                    { text: "Tidak menggunakan Seat Belt saat unit bergerak", isCorrect: true },
+                    { text: "Mengoperasikan unit tanpa SIMPER/KIMPER", isCorrect: true },
+                    { text: "Lupa menyemir ban sebelum shift", isCorrect: false },
+                    { text: "Menggunakan HP saat mengemudi", isCorrect: true },
+                    { text: "Mobil kotor karena lumpur tambang", isCorrect: false },
+                    { text: "Lupa mematikan AC saat parkir", isCorrect: false },
+                    { text: "Terlambat 5 menit saat P5M", isCorrect: false }
+                ]
+            }
+        ];
+
+        let quizData = [];
+        let currentState = 'start'; 
+        let currentQuestionIndex = 0;
+        let userAnswers = {}; 
+        let timerInterval;
+        let timeElapsed = 0;
+        let driverName = "";
+
+        // DOM Elements
+        const appContainer = document.getElementById('appContainer');
+        const timerWrapper = document.getElementById('timerWrapper');
+        const timeValue = document.getElementById('timeValue');
+        const loadingOverlay = document.getElementById('loadingOverlay');
+        const loadingText = document.getElementById('loadingText');
+
+        async function init() {
+            if (GOOGLE_SCRIPT_URL) {
+                showLoading(true, "Sinkronisasi Database...");
+                try {
+                    const response = await fetch(GOOGLE_SCRIPT_URL);
+                    const data = await response.json();
+                    if (data && data.length > 0) {
+                        quizData = data;
+                    } else { throw new Error("Data kosong"); }
+                } catch (error) {
+                    quizData = fallbackQuizData;
+                } finally {
+                    showLoading(false);
+                }
+            } else {
+                quizData = fallbackQuizData;
+            }
+            renderStartScreen();
+        }
+
+        function showLoading(show, text = "Loading...") {
+            loadingText.innerText = text;
+            loadingOverlay.classList.toggle('hidden', !show);
+        }
+
+        function startQuiz() {
+            const nameInput = document.getElementById('driverNameInput');
+            if(nameInput && nameInput.value.trim() === "") {
+                alert("Wajib mengisi Nama Lengkap / NIK untuk melanjutkan!");
+                return;
+            }
+            driverName = nameInput ? nameInput.value.trim() : "Anonim";
+
+            currentState = 'quiz';
+            currentQuestionIndex = 0;
+            userAnswers = {};
+            timeElapsed = 0;
+            timerWrapper.classList.remove('hidden');
+            
+            if (timerInterval) clearInterval(timerInterval);
+            timerInterval = setInterval(() => {
+                timeElapsed++;
+                const minutes = Math.floor(timeElapsed / 60).toString().padStart(2, '0');
+                const seconds = (timeElapsed % 60).toString().padStart(2, '0');
+                timeValue.innerText = `${minutes}:${seconds}`;
+            }, 1000);
+
+            renderQuestion();
+        }
+
+        async function finishQuiz() {
+            clearInterval(timerInterval);
+            currentState = 'result';
+            renderResultScreen();
+            if (GOOGLE_SCRIPT_URL) await submitResultsToSheet();
+        }
+
+        async function submitResultsToSheet() {
+            const { finalAverage, resultsDetail } = calculateResults();
+            const passed = finalAverage >= 75 ? "LULUS" : "GAGAL";
+            const payload = {
+                namaDriver: driverName,
+                score: finalAverage,
+                status: passed,
+                details: JSON.stringify(resultsDetail.map(r => ({q: r.question, score: r.score})))
+            };
+            showLoading(true, "Menyimpan Data...");
+            try {
+                await fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: JSON.stringify(payload) });
+                alert("Data berhasil tersimpan di sistem.");
+            } catch (error) {
+                alert("Gagal koneksi server. Simpan bukti secara manual.");
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        function toggleAnswer(optionIndex) {
+            const currentQ = quizData[currentQuestionIndex];
+            const qId = currentQ.id;
+            if (!userAnswers[qId]) userAnswers[qId] = [];
+            
+            const idx = userAnswers[qId].indexOf(optionIndex);
+            if (idx > -1) userAnswers[qId].splice(idx, 1);
+            else userAnswers[qId].push(optionIndex);
+            updateOptionStyles(optionIndex);
+        }
+
+        function calculateResults() {
+            let totalScore = 0;
+            let resultsDetail = [];
+            quizData.forEach(q => {
+                const userSelectedIndices = userAnswers[q.id] || [];
+                let correctSelections = 0, wrongSelections = 0;
+                q.options.forEach((opt, idx) => {
+                    if (userSelectedIndices.includes(idx)) {
+                        opt.isCorrect ? correctSelections++ : wrongSelections++;
+                    }
+                });
+                let qScore = (correctSelections * 25) - (wrongSelections * 25);
+                if (qScore < 0) qScore = 0;
+                totalScore += qScore;
+                resultsDetail.push({
+                    id: q.id, question: q.question, score: qScore,
+                    userIndices: userSelectedIndices, options: q.options
+                });
+            });
+            const finalAverage = Math.round(totalScore / quizData.length);
+            return { totalScore, finalAverage, resultsDetail };
+        }
+
+        // --- RENDER FUNCTIONS ---
+
+        function renderStartScreen() {
+            const connectionStatus = GOOGLE_SCRIPT_URL 
+                ? '<span class="flex items-center gap-1 text-green-700 text-[10px] uppercase font-bold tracking-wider bg-green-100 px-3 py-1 rounded-full"><i class="fas fa-wifi"></i> Online</span>' 
+                : '<span class="flex items-center gap-1 text-gray-600 text-[10px] uppercase font-bold tracking-wider bg-gray-200 px-3 py-1 rounded-full"><i class="fas fa-database"></i> Offline Mode</span>';
+
+            appContainer.innerHTML = `
+                <div class="card-modern rounded-2xl p-6 sm:p-10 animate-slide-up relative overflow-hidden">
+                    
+                    <!-- Dekorasi Background Abstrak -->
+                    <div class="absolute top-0 right-0 -mt-10 -mr-10 w-40 h-40 bg-blue-100 rounded-full opacity-50 blur-3xl"></div>
+                    <div class="absolute bottom-0 left-0 -mb-10 -ml-10 w-40 h-40 bg-yellow-100 rounded-full opacity-50 blur-3xl"></div>
+
+                    <div class="relative z-10 grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+                        
+                        <!-- Kolom Kiri: Teks & Form -->
+                        <div class="text-left order-2 md:order-1">
+                            <div class="mb-4">${connectionStatus}</div>
+                            <h2 class="text-3xl sm:text-4xl font-extrabold text-gray-900 mb-3 leading-tight">
+                                Safety First,<br><span class="text-blue-700">Production Follows</span>
+                            </h2>
+                            <p class="text-gray-600 mb-8 leading-relaxed">
+                                Selamat datang di sistem evaluasi kompetensi driver PT GPE. 
+                                Pastikan Anda siap dan memahami prosedur keselamatan pertambangan sebelum memulai.
+                            </p>
+
+                            <div class="bg-white/80 border border-gray-200 p-1 rounded-xl shadow-inner flex items-center mb-6 focus-within:ring-2 focus-within:ring-blue-500 transition-all">
+                                <div class="pl-4 text-gray-400"><i class="fas fa-user-hard-hat text-xl"></i></div>
+                                <input class="bg-transparent border-none text-gray-800 text-sm font-semibold rounded-lg w-full p-3 focus:ring-0 outline-none placeholder-gray-400" 
+                                    id="driverNameInput" type="text" placeholder="Masukkan Nama Lengkap / NIK" autocomplete="off">
+                            </div>
+
+                            <button onclick="startQuiz()" class="w-full bg-gradient-to-r from-blue-700 to-blue-600 hover:from-blue-800 hover:to-blue-700 text-white font-bold py-4 px-8 rounded-xl transition duration-300 shadow-lg hover:shadow-blue-500/30 transform hover:-translate-y-0.5 flex items-center justify-center gap-3">
+                                <span>MULAI EVALUASI</span>
+                                <i class="fas fa-arrow-right"></i>
+                            </button>
+                        </div>
+
+                        <!-- Kolom Kanan: Visual Hero P2H -->
+                        <div class="order-1 md:order-2 relative group">
+                            <div class="absolute inset-0 bg-blue-600 rounded-2xl rotate-3 opacity-10 group-hover:rotate-6 transition-transform duration-500"></div>
+                            <div class="relative rounded-2xl overflow-hidden shadow-2xl border-4 border-white aspect-video md:aspect-square lg:aspect-[4/3]">
+                                <!-- GAMBAR P2H DISINI -->
+                                <img src="hero_p2h.jpg" 
+                                     onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1596464528172-23c807b01851?q=80&w=1000&auto=format&fit=crop';" 
+                                     alt="P2H Activity" 
+                                     class="object-cover w-full h-full transform group-hover:scale-105 transition duration-700 ease-in-out">
+                                
+                                <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-4">
+                                    <p class="text-white text-xs font-medium"><i class="fas fa-camera mr-1"></i> Dokumentasi P2H Unit</p>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            `;
+            timerWrapper.classList.add('hidden');
+        }
+
+        function renderQuestion() {
+            const q = quizData[currentQuestionIndex];
+            const savedAnswers = userAnswers[q.id] || [];
+            let optionsHtml = '';
+            
+            q.options.forEach((opt, index) => {
+                const isChecked = savedAnswers.includes(index) ? 'checked' : '';
+                optionsHtml += `
+                    <label class="cursor-pointer group relative">
+                        <input type="checkbox" class="option-checkbox hidden" value="${index}" ${isChecked} onchange="toggleAnswer(${index})">
+                        <div id="opt-div-${index}" class="flex items-start p-4 border border-gray-200 rounded-xl bg-white hover:bg-blue-50/50 transition-all duration-200 h-full group-hover:border-blue-400/50 shadow-sm">
+                            <div class="mt-0.5 w-6 h-6 border-2 border-gray-300 rounded flex-shrink-0 mr-3 flex items-center justify-center bg-gray-50 check-box-visual transition-colors">
+                                <i class="fas fa-check text-white text-xs check-icon opacity-0 transition-opacity"></i>
+                            </div>
+                            <span class="text-gray-700 font-medium select-none text-sm leading-relaxed">${opt.text}</span>
+                        </div>
+                    </label>
+                `;
+            });
+
+            appContainer.innerHTML = `
+                <div class="bg-white/95 backdrop-blur rounded-2xl shadow-xl border border-white/50 overflow-hidden animate-slide-up flex flex-col h-full">
+                    <div class="bg-gray-50/80 px-6 py-4 border-b border-gray-200 flex justify-between items-center">
+                        <span class="text-xs font-bold text-gray-500 uppercase tracking-wider bg-gray-200 px-2 py-1 rounded">Soal ${currentQuestionIndex + 1}/${quizData.length}</span>
+                        <div class="flex items-center gap-2">
+                             <div class="h-6 w-6 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 text-xs"><i class="fas fa-user"></i></div>
+                             <span class="text-xs font-bold text-gray-700 truncate max-w-[150px] uppercase">${driverName}</span>
+                        </div>
+                    </div>
+                    
+                    <div class="w-full bg-gray-200 h-1">
+                        <div class="bg-blue-600 h-1 transition-all duration-500" style="width: ${((currentQuestionIndex + 1) / quizData.length) * 100}%"></div>
+                    </div>
+
+                    <div class="p-6 sm:p-8">
+                        <h3 class="text-lg sm:text-xl font-bold text-gray-900 mb-6 leading-relaxed">${q.question}</h3>
+                        <div class="flex items-center gap-2 mb-6 text-xs sm:text-sm text-blue-800 bg-blue-50 px-4 py-3 rounded-lg border border-blue-100">
+                            <i class="fas fa-exclamation-circle text-lg"></i>
+                            <span class="font-medium">Pilih <span class="font-extrabold underline">SEMUA</span> jawaban benar (Minimal 4).</span>
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">${optionsHtml}</div>
+                    </div>
+
+                    <div class="bg-gray-50/80 px-6 py-4 border-t border-gray-200 flex justify-between items-center mt-auto">
+                        ${currentQuestionIndex > 0 ? 
+                            `<button onclick="prevQuestion()" class="text-gray-500 hover:text-gray-900 font-bold text-xs sm:text-sm px-4 py-2 transition flex items-center"><i class="fas fa-arrow-left mr-2"></i> KEMBALI</button>` : `<div></div>`}
+                        
+                        <button onclick="${currentQuestionIndex === quizData.length - 1 ? 'finishQuiz()' : 'nextQuestion()'}" class="bg-gray-900 hover:bg-black text-white font-bold text-xs sm:text-sm py-3 px-6 rounded-lg shadow-lg transition transform active:scale-95 flex items-center">
+                            ${currentQuestionIndex === quizData.length - 1 ? 'SUBMIT JAWABAN' : 'SELANJUTNYA'} 
+                            ${currentQuestionIndex === quizData.length - 1 ? '<i class="fas fa-paper-plane ml-2"></i>' : '<i class="fas fa-arrow-right ml-2"></i>'}
+                        </button>
+                    </div>
+                </div>
+            `;
+            savedAnswers.forEach(idx => updateOptionStyles(idx));
+        }
+
+        function updateOptionStyles(index) {
+            const checkbox = document.querySelector(`input[value="${index}"]`);
+            const div = document.getElementById(`opt-div-${index}`);
+            if(!div) return;
+            const checkIcon = div.querySelector('.check-icon');
+            const checkBoxVisual = div.querySelector('.check-box-visual');
+
+            if (checkbox.checked) {
+                div.classList.add('border-blue-500', 'bg-blue-50/50', 'ring-1', 'ring-blue-500');
+                div.classList.remove('border-gray-200', 'bg-white');
+                checkBoxVisual.classList.add('bg-blue-600', 'border-blue-600');
+                checkBoxVisual.classList.remove('bg-gray-50', 'border-gray-300');
+                checkIcon.classList.remove('opacity-0');
+            } else {
+                div.classList.remove('border-blue-500', 'bg-blue-50/50', 'ring-1', 'ring-blue-500');
+                div.classList.add('border-gray-200', 'bg-white');
+                checkBoxVisual.classList.remove('bg-blue-600', 'border-blue-600');
+                checkBoxVisual.classList.add('bg-gray-50', 'border-gray-300');
+                checkIcon.classList.add('opacity-0');
+            }
+        }
+
+        function nextQuestion() {
+            if (currentQuestionIndex < quizData.length - 1) { currentQuestionIndex++; renderQuestion(); }
+        }
+        function prevQuestion() {
+            if (currentQuestionIndex > 0) { currentQuestionIndex--; renderQuestion(); }
+        }
+
+        function renderResultScreen() {
+            const { finalAverage, resultsDetail } = calculateResults();
+            const passed = finalAverage >= 75;
+            let detailsHtml = '';
+            
+            resultsDetail.forEach((res, idx) => {
+                let optionsHtml = '';
+                res.options.forEach((opt, optIdx) => {
+                    const isSelected = res.userIndices.includes(optIdx);
+                    let cls = "border-gray-100 text-gray-400 bg-white";
+                    let icon = "";
+                    if (isSelected && opt.isCorrect) {
+                        cls = "border-green-500 bg-green-50 text-green-800 font-bold shadow-sm";
+                        icon = "<i class='fas fa-check'></i>";
+                    } else if (isSelected && !opt.isCorrect) {
+                        cls = "border-red-500 bg-red-50 text-red-800 font-bold shadow-sm";
+                        icon = "<i class='fas fa-times'></i>";
+                    } else if (!isSelected && opt.isCorrect) {
+                        cls = "border-green-300 bg-white text-green-600 border-dashed opacity-60";
+                        icon = "<i class='fas fa-check text-[10px]'></i>";
+                    }
+                    optionsHtml += `<div class="text-xs p-2 border rounded mb-1 flex justify-between items-center ${cls}"><span>${opt.text}</span>${icon}</div>`;
+                });
+                detailsHtml += `
+                    <div class="mb-4 bg-white rounded-lg p-4 border border-gray-200 shadow-sm text-left">
+                        <div class="flex justify-between items-start mb-2 border-b pb-2 border-gray-100">
+                            <span class="font-bold text-gray-800 text-sm">#${idx+1}. ${res.question.substring(0, 50)}...</span>
+                            <span class="text-xs font-bold px-2 py-0.5 rounded ${res.score===100?'bg-green-100 text-green-800':'bg-red-100 text-red-800'}">${res.score} Poin</span>
+                        </div>
+                        <div>${optionsHtml}</div>
+                    </div>
+                `;
+            });
+
+            appContainer.innerHTML = `
+                <div class="card-modern rounded-2xl p-6 sm:p-10 animate-slide-up text-center max-h-[85vh] flex flex-col">
+                    <div class="flex-shrink-0">
+                        <div class="w-20 h-20 mx-auto mb-4 rounded-full flex items-center justify-center border-4 ${passed ? 'bg-green-100 border-green-50 text-green-600' : 'bg-red-100 border-red-50 text-red-600'}">
+                            <i class="fas ${passed ? 'fa-medal' : 'fa-times-circle'} text-4xl"></i>
+                        </div>
+                        <h2 class="text-2xl font-bold text-gray-900">Hasil Evaluasi</h2>
+                        <p class="text-sm text-gray-500 font-bold uppercase tracking-widest mt-1">${driverName}</p>
+                        
+                        <div class="grid grid-cols-2 gap-4 my-6">
+                            <div class="p-4 bg-blue-50 border border-blue-100 rounded-xl">
+                                <div class="text-[10px] uppercase font-bold text-gray-400">Total Skor</div>
+                                <div class="text-4xl font-black text-blue-600">${finalAverage}</div>
+                            </div>
+                            <div class="p-4 ${passed?'bg-green-50 border-green-100':'bg-red-50 border-red-100'} rounded-xl border">
+                                <div class="text-[10px] uppercase font-bold text-gray-400">Status</div>
+                                <div class="text-2xl font-bold ${passed?'text-green-600':'text-red-600'} mt-1">${passed?'LULUS':'GAGAL'}</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flex-grow overflow-y-auto pr-2 custom-scrollbar bg-gray-50 p-4 rounded-xl border border-gray-200 mb-4">${detailsHtml}</div>
+                    <div class="flex-shrink-0 flex gap-3 justify-center">
+                        <button onclick="window.print()" class="flex-1 bg-white border border-gray-300 text-gray-700 font-bold py-3 rounded-lg hover:bg-gray-50 transition"><i class="fas fa-print mr-2"></i> PDF</button>
+                        <button onclick="location.reload()" class="flex-1 bg-blue-600 text-white font-bold py-3 rounded-lg hover:bg-blue-700 transition"><i class="fas fa-redo mr-2"></i> Ulang</button>
+                    </div>
+                </div>
+            `;
+            timerWrapper.classList.add('hidden');
+        }
+
+        init();
+    </script>
+</body>
+</html>
